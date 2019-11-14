@@ -14,6 +14,8 @@ import javafx.stage.StageStyle;
 
 public class App extends Application {
 
+    private GridPane grid;
+
     @Override
     public void start(Stage window) {
 
@@ -23,11 +25,18 @@ public class App extends Application {
 
         BorderPane root = new BorderPane();
         root.setCenter(createList());
-        root.setBottom(createSaveButton());
+        root.setBottom(createNewLineButton());
+        root.setRight(createSaveButton());
         Scene content = new Scene(root, 320, 240);
         window.setScene(content);
 
         window.show();
+    }
+
+    private Button createNewLineButton() {
+        Button newLineButton = new Button("Add new item");
+        newLineButton.setOnAction(this::createNewLine);
+        return newLineButton;
     }
 
     private Button createSaveButton() {
@@ -37,6 +46,19 @@ public class App extends Application {
     }
 
     private void saveList(ActionEvent actionEvent) {
+        int counter=0;
+        String label ="";
+        int amount;
+        for (Node n: grid.getChildren()) {
+            TextField text = (TextField) n;
+            if (counter % 2 == 0) { label = text.getText(); }
+            else {
+                amount = Integer.parseInt(text.getText());
+                Item item = new Item(label, amount);
+                System.out.println(item.toString());
+            }
+            counter++;
+        }
         // tässä kutsutaan parseria
     }
 
@@ -45,7 +67,7 @@ public class App extends Application {
     }
 
     private GridPane createList() {
-        GridPane grid = new GridPane();
+        grid = new GridPane();
 
         TextField label = new TextField();
         TextField amount = new TextField();
@@ -54,7 +76,6 @@ public class App extends Application {
 
         Button newLineButton = new Button("Add new item");
         newLineButton.setOnAction(this::createNewLine);
-        grid.add(newLineButton, 0, 1);
 
         return grid;
     }
