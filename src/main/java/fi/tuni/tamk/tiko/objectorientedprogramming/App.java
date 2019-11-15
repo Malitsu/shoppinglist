@@ -35,8 +35,12 @@ public class App extends Application {
 
     private Button createNewLineButton() {
         Button newLineButton = new Button("Add new item");
-        newLineButton.setOnAction(this::createNewLine);
+        newLineButton.setOnAction(this::newLineAction);
         return newLineButton;
+    }
+
+    private void newLineAction(ActionEvent actionEvent) {
+        createNewLine();
     }
 
     private Button createSaveButton() {
@@ -47,13 +51,13 @@ public class App extends Application {
 
     private void saveList(ActionEvent actionEvent) {
         int counter=0;
-        String label ="";
-        int amount;
+        String label = "";
+        String amount = "";
         for (Node n: grid.getChildren()) {
             TextField text = (TextField) n;
             if (counter % 2 == 0) { label = text.getText(); }
             else {
-                amount = Integer.parseInt(text.getText());
+                amount = text.getText();
                 Item item = new Item(label, amount);
                 System.out.println(item.toString());
             }
@@ -69,18 +73,17 @@ public class App extends Application {
     private GridPane createList() {
         grid = new GridPane();
 
-        TextField label = new TextField();
-        TextField amount = new TextField();
-        grid.add(label, 0, 0);
-        grid.add(amount, 1, 0);
-
-        Button newLineButton = new Button("Add new item");
-        newLineButton.setOnAction(this::createNewLine);
+        for (int i=0; i<5; i++) {
+            createNewLine();
+        }
 
         return grid;
     }
 
-    private void createNewLine(ActionEvent actionEvent) {
-
+    private void createNewLine() {
+        TextField label = new TextField();
+        TextField amount = new TextField();
+        grid.add(label, 0, grid.getRowCount()+1);
+        grid.add(amount, 1, grid.getRowCount()-1);
     }
 }

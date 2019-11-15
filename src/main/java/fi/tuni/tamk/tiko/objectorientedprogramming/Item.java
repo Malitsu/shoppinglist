@@ -1,10 +1,10 @@
 package fi.tuni.tamk.tiko.objectorientedprogramming;
 
 public class Item {
-    String label;
-    int amount;
+    private String label;
+    private String amount;
 
-    public Item(String label, int amount) {
+    public Item(String label, String amount) {
         this.label = label;
         this.amount = amount;
     }
@@ -13,7 +13,7 @@ public class Item {
         this.label = label;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(String amount) {
         this.amount = amount;
     }
 
@@ -21,7 +21,7 @@ public class Item {
         return label;
     }
 
-    public int getAmount() {
+    public String getAmount() {
         return amount;
     }
 
