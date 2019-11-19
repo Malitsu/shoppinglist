@@ -50,20 +50,26 @@ public class App extends Application {
     }
 
     private void saveList(ActionEvent actionEvent) {
+        Parser parser = new Parser();
         int counter=0;
         String label = "";
         String amount = "";
         for (Node n: grid.getChildren()) {
             TextField text = (TextField) n;
-            if (counter % 2 == 0) { label = text.getText(); }
+            if (counter % 2 == 0) {
+                label = text.getText();
+                if (label.isEmpty()) {
+                    break;
+                }
+            }
             else {
                 amount = text.getText();
                 Item item = new Item(label, amount);
-                System.out.println(item.toString());
+                parser.addItem(item);
             }
             counter++;
         }
-        // tässä kutsutaan parseria
+        parser.writeToFile();
     }
 
     public static void main(String[] args) {
