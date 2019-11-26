@@ -1,4 +1,4 @@
-package fi.tuni.tamk.tiko.objectorientedprogramming;
+/*package fi.tuni.tiko.objectorientedprogramming;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,8 +23,8 @@ public class Parser {
 
     public void writeToFile() {
         try {
-            Path file = Paths.get("file.txt");
+            Path file = Paths.get("save.json");
             Files.write(file, lines, StandardCharsets.UTF_8);
         } catch(Exception e) { e.printStackTrace(); }
     }
-}
+}*/

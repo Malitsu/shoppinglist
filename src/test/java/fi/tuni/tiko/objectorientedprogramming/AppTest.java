@@ -1,4 +1,4 @@
-package fi.tuni.tamk.tiko.objectorientedprogramming;
+package fi.tuni.tiko.objectorientedprogramming;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

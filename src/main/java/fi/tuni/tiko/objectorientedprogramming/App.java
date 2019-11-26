@@ -1,4 +1,4 @@
-package fi.tuni.tamk.tiko.objectorientedprogramming;
+package fi.tuni.tiko.objectorientedprogramming;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -9,7 +9,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import javafx.scene.layout.StackPane;
 import javafx.stage.StageStyle;
 
 public class App extends Application {
