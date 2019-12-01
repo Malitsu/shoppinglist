@@ -1,5 +1,6 @@
 package fi.tuni.tiko.objectorientedprogramming;
 
+import fi.tuni.tiko.objectorientedprogramming.JSONparser.*;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
@@ -42,10 +43,20 @@ public class App extends Application {
         createNewLine();
     }
 
+    private Button createLoadButton() {
+        Button loadButton = new Button("Load saved list");
+        loadButton.setOnAction(this::loadList);
+        return loadButton;
+    }
+
     private Button createSaveButton() {
         Button saveButton = new Button("Save the list");
         saveButton.setOnAction(this::saveList);
         return saveButton;
+    }
+
+    private void loadList(ActionEvent actionEvent) {
+
     }
 
     private void saveList(ActionEvent actionEvent) {

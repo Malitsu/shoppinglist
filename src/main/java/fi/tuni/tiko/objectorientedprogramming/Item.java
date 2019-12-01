@@ -1,4 +1,4 @@
-package fi.tuni.tiko.objectorientedprogramming;
+/*package fi.tuni.tiko.objectorientedprogramming;
 
 public class Item {
     private String label;
@@ -33,3 +33,4 @@ public class Item {
                 '}';
     }
 }
+*/
