@@ -1,6 +1,7 @@
 package fi.tuni.tiko.objectorientedprogramming;
 
-import fi.tuni.tiko.objectorientedprogramming.JSONparser.*;
+import fi.tuni.tiko.objectorientedprogramming.JSONparser.Item;
+import fi.tuni.tiko.objectorientedprogramming.JSONparser.Parser;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
@@ -9,12 +10,16 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
+import java.util.Optional;
 
 public class App extends Application {
 
     private GridPane grid;
+    private BorderPane root;
 
     @Override
     public void start(Stage window) {
@@ -23,10 +28,11 @@ public class App extends Application {
         window.centerOnScreen();
         window.setTitle("Shopping list");
 
-        BorderPane root = new BorderPane();
+        root = new BorderPane();
         root.setCenter(createList());
         root.setBottom(createNewLineButton());
-        root.setRight(createSaveButton());
+        VBox buttons = new VBox(createSaveButton(), createLoadButton());
+        root.setRight(buttons);
         Scene content = new Scene(root, 320, 240);
         window.setScene(content);
 
@@ -56,7 +62,18 @@ public class App extends Application {
     }
 
     private void loadList(ActionEvent actionEvent) {
+        Parser parser = new Parser();
+        parser.readFromFile();
+        int counter=0;
+        grid = new GridPane();
+        while (parser.areMoreItems()) {
+            Optional<Item> item = parser.returnItem();
+            if (item.isPresent()) {
+                createNewLine(item.get());
+            }
+        }
 
+        root.setCenter(grid);
     }
 
     private void saveList(ActionEvent actionEvent) {
@@ -99,6 +116,13 @@ public class App extends Application {
     private void createNewLine() {
         TextField label = new TextField();
         TextField amount = new TextField();
+        grid.add(label, 0, grid.getRowCount()+1);
+        grid.add(amount, 1, grid.getRowCount()-1);
+    }
+
+    private void createNewLine(Item item) {
+        TextField label = new TextField(item.getTag());
+        TextField amount = new TextField(item.getProperty());
         grid.add(label, 0, grid.getRowCount()+1);
         grid.add(amount, 1, grid.getRowCount()-1);
     }
