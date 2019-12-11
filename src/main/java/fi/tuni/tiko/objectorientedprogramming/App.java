@@ -37,6 +37,13 @@ public class App extends Application {
         window.setScene(content);
 
         window.show();
+
+        DropboxConnection db = new DropboxConnection();
+        try {
+            db.save("test.txt");
+            db.readFile();
+        } catch (Exception e) {System.out.println(e);}
+
     }
 
     private Button createNewLineButton() {
