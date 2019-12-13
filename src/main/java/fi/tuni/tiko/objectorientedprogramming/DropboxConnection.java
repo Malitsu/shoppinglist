@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import com.dropbox.core.DbxAppInfo;
 import com.dropbox.core.DbxAuthFinish;
@@ -21,26 +22,41 @@ import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.DbxWebAuth;
 import com.dropbox.core.json.JsonReader;
+import javafx.application.Application;
+import javafx.scene.control.TextInputDialog;
 
 public class DropboxConnection {
     private static String ACCESS_TOKEN;
     private String ACCESS_TOKEN_FILE = "token.app";
     private String filename = "test.txt";
     private String keyFile = "dropbox.app";
+    private TextInputDialog inputDialog;
 
     public DropboxConnection() {
+
+    }
+
+    public void connect() {
         File tokenFile = new File(ACCESS_TOKEN_FILE);
         if (tokenFile.exists() && !tokenFile.isDirectory()) {
+
             try {
                 List<String> lines = Files.readAllLines(Paths.get(filename), Charset.defaultCharset());
                 ACCESS_TOKEN = lines.get(0);
-            } catch(IOException e) { e.printStackTrace(); }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
         else {
             try {
                 authenticate();
             } catch (IOException e) { e.printStackTrace(); }
         }
+    }
+
+    public void setInputDialog(TextInputDialog newInputDialog) {
+        inputDialog = newInputDialog;
     }
 
     public static void save(String filename) throws DbxException, IOException {
@@ -91,20 +107,14 @@ public class DropboxConnection {
                 .build();
 
         String authorizeUrl = webAuth.authorize(webAuthRequest);
-        System.out.println("1. Go to " + authorizeUrl);
-        System.out.println("2. Click \"Allow\" (you might have to log in first).");
-        System.out.println("3. Copy the authorization code.");
-        System.out.print("Enter the authorization code here: ");
-
-        String code = new BufferedReader(new InputStreamReader(System.in)).readLine();
-        if (code == null) {
-            System.exit(1); return;
+        Optional<String> code = dialog(authorizeUrl);
+        if (!code.isPresent() || code.get().trim().length() < 3 ) {
+            System.exit(1);
         }
-        code = code.trim();
 
         DbxAuthFinish authFinish;
         try {
-            authFinish = webAuth.finishFromCode(code);
+            authFinish = webAuth.finishFromCode(code.get().trim());
         } catch (DbxException ex) {
             System.err.println("Error in DbxWebAuth.authorize: " + ex.getMessage());
             System.exit(1); return;
@@ -122,5 +132,16 @@ public class DropboxConnection {
             Files.write(Paths.get(ACCESS_TOKEN_FILE), lines, StandardCharsets.UTF_8);
         } catch (IOException e) {e.printStackTrace();}
 
+    }
+
+    private Optional<String> dialog(String url) {
+        inputDialog.setTitle("Dropbox Authentication");
+        inputDialog.setHeaderText("1. Go to " +url
+                +"\n 2. Click \"Allow\" (you might have to log in first)."
+                +"\n 3. Copy the authorization code.");
+        inputDialog.setContentText("Enter the authorization code here: ");
+
+        Optional<String> result = inputDialog.showAndWait();
+        return result;
     }
 }

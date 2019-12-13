@@ -1,5 +1,6 @@
 package fi.tuni.tiko.objectorientedprogramming;
 
+import com.dropbox.core.DbxException;
 import fi.tuni.tiko.objectorientedprogramming.JSONparser.Item;
 import fi.tuni.tiko.objectorientedprogramming.JSONparser.Parser;
 import javafx.application.Application;
@@ -8,12 +9,14 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.io.IOException;
 import java.util.Optional;
 
 public class App extends Application {
@@ -31,19 +34,31 @@ public class App extends Application {
         root = new BorderPane();
         root.setCenter(createList());
         root.setBottom(createNewLineButton());
-        VBox buttons = new VBox(createSaveButton(), createLoadButton());
+        root.setLeft(createLoadButton());
+        VBox buttons = new VBox(createSaveButton(), createSaveToDbButton());
         root.setRight(buttons);
         Scene content = new Scene(root, 320, 240);
         window.setScene(content);
 
         window.show();
 
-        DropboxConnection db = new DropboxConnection();
-        try {
-            db.save("test.txt");
-            db.readFile();
-        } catch (Exception e) {System.out.println(e);}
+    }
 
+    private Button createSaveToDbButton() {
+        Button saveToDbButton = new Button("Save to Dropbox");
+        saveToDbButton.setOnAction(this::saveToDb);
+        return saveToDbButton;
+    }
+
+    private void saveToDb(ActionEvent actionEvent) {
+        DropboxConnection dropbox = new DropboxConnection();
+        dropbox.setInputDialog(new TextInputDialog("your code"));
+        dropbox.connect();
+
+        /*try {
+            dropbox.save("test.txt");
+        } catch (DbxException e){ e.printStackTrace(); }
+        catch (IOException e) { e.printStackTrace(); }*/
     }
 
     private Button createNewLineButton() {
