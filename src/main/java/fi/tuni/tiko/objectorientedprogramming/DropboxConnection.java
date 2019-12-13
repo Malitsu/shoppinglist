@@ -23,7 +23,9 @@ import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.DbxWebAuth;
 import com.dropbox.core.json.JsonReader;
 import javafx.application.Application;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.GridPane;
 
 public class DropboxConnection {
     private static String ACCESS_TOKEN;
@@ -121,9 +123,6 @@ public class DropboxConnection {
         }
 
         System.out.println("Authorization complete.");
-        /* System.out.println("- User ID: " + authFinish.getUserId());
-        System.out.println("- Account ID: " + authFinish.getAccountId());
-        System.out.println("- Access Token: " + authFinish.getAccessToken()); */
         ACCESS_TOKEN = authFinish.getAccessToken();
 
         try {
@@ -136,9 +135,15 @@ public class DropboxConnection {
 
     private Optional<String> dialog(String url) {
         inputDialog.setTitle("Dropbox Authentication");
-        inputDialog.setHeaderText("1. Go to " +url
+        TextArea linkField = new TextArea("1. Go to\n" +url
                 +"\n 2. Click \"Allow\" (you might have to log in first)."
                 +"\n 3. Copy the authorization code.");
+        linkField.setEditable(false);
+        linkField.setWrapText(true);
+        linkField.setPrefHeight(100);
+        GridPane pane = new GridPane();
+        pane.add(linkField, 0, 0);
+        inputDialog.getDialogPane().setHeader(pane);
         inputDialog.setContentText("Enter the authorization code here: ");
 
         Optional<String> result = inputDialog.showAndWait();

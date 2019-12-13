@@ -34,8 +34,7 @@ public class App extends Application {
         root = new BorderPane();
         root.setCenter(createList());
         root.setBottom(createNewLineButton());
-        root.setLeft(createLoadButton());
-        VBox buttons = new VBox(createSaveButton(), createSaveToDbButton());
+        VBox buttons = new VBox(createLoadButton(), createSaveButton(), createSaveToDbButton());
         root.setRight(buttons);
         Scene content = new Scene(root, 320, 240);
         window.setScene(content);
