@@ -5,6 +5,7 @@ import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
+import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.users.FullAccount;
 
 import java.io.*;
@@ -30,12 +31,11 @@ import javafx.scene.layout.GridPane;
 public class DropboxConnection {
     private static String ACCESS_TOKEN;
     private String ACCESS_TOKEN_FILE = "token.app";
-    private String filename = "test.txt";
     private String keyFile = "dropbox.app";
     private TextInputDialog inputDialog;
 
-    public DropboxConnection() {
-
+    public DropboxConnection(TextInputDialog inputDialog) {
+        setInputDialog(inputDialog);
     }
 
     public void connect() {
@@ -43,7 +43,7 @@ public class DropboxConnection {
         if (tokenFile.exists() && !tokenFile.isDirectory()) {
 
             try {
-                List<String> lines = Files.readAllLines(Paths.get(filename), Charset.defaultCharset());
+                List<String> lines = Files.readAllLines(Paths.get(ACCESS_TOKEN_FILE), Charset.defaultCharset());
                 ACCESS_TOKEN = lines.get(0);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -61,32 +61,33 @@ public class DropboxConnection {
         inputDialog = newInputDialog;
     }
 
-    public static void save(String filename) throws DbxException, IOException {
+    public static void save(String filename) {
         DbxRequestConfig config = DbxRequestConfig.newBuilder("JSONparser").build();
         DbxClientV2 client = new DbxClientV2(config, ACCESS_TOKEN);
 
-        try (InputStream in = new FileInputStream("test.txt")) {
-            FileMetadata metadata = client.files().uploadBuilder("/test.txt")
-                    .uploadAndFinish(in);
-        }
+        try (InputStream in = new FileInputStream(filename)) {
+            FileMetadata metadata = client.files()
+                                        .uploadBuilder("/" +filename)
+                                        .withMode(WriteMode.OVERWRITE)
+                                        .uploadAndFinish(in);
+        } catch (DbxException e) { e.printStackTrace(); }
+        catch (IOException e) { e.printStackTrace(); }
     }
 
-    public void readFile() {
+    public void readFile(String filename) {
         DbxRequestConfig config = DbxRequestConfig.newBuilder("JSONparser").build();
         DbxClientV2 client = new DbxClientV2(config, ACCESS_TOKEN);
         try {
             //output file for download --> storage location on local system to download file
             FileOutputStream downloadFile = new FileOutputStream(filename);
             try {
-                FileMetadata metadata = client.files().downloadBuilder("/test.txt").download(downloadFile);
+                FileMetadata metadata = client.files().downloadBuilder("/" +filename).download(downloadFile);
             } finally
             {
                 downloadFile.close();
             }
         } catch (DbxException e) { e.printStackTrace(); }
         catch (IOException e) { e.printStackTrace(); }
-
-        System.out.println("reading succeeded");
     }
 
     public void authenticate() throws IOException {

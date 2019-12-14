@@ -1,6 +1,7 @@
 package fi.tuni.tiko.objectorientedprogramming;
 
 import com.dropbox.core.DbxException;
+import fi.tuni.tiko.objectorientedprogramming.JSONparser.H2Connect;
 import fi.tuni.tiko.objectorientedprogramming.JSONparser.Item;
 import fi.tuni.tiko.objectorientedprogramming.JSONparser.Parser;
 import javafx.application.Application;
@@ -12,17 +13,21 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 public class App extends Application {
 
     private GridPane grid;
     private BorderPane root;
+    private DropboxConnection dropbox = null;
+    final private String SAVEFILENAME = "save.json";
 
     @Override
     public void start(Stage window) {
@@ -33,14 +38,82 @@ public class App extends Application {
 
         root = new BorderPane();
         root.setCenter(createList());
-        root.setBottom(createNewLineButton());
-        VBox buttons = new VBox(createLoadButton(), createSaveButton(), createSaveToDbButton());
-        root.setRight(buttons);
+        HBox listButtons = new HBox(createNewLineButton(), createClearButton());
+        root.setBottom(listButtons);
+        VBox saveButtons = new VBox(createLoadButton(), createSaveButton(),
+                                    createLoadfromDbButton(), createSaveToDbButton(),
+                                    createSaveToBaseButton(), createLoadFromBaseButton());
+        root.setRight(saveButtons);
         Scene content = new Scene(root, 320, 240);
         window.setScene(content);
 
         window.show();
 
+    }
+
+    private Button createLoadFromBaseButton() {
+        Button loadFromBaseButton = new Button("Load from Database");
+        loadFromBaseButton.setOnAction(this::loadFromBase);
+        return loadFromBaseButton;
+    }
+
+    private void loadFromBase(ActionEvent actionEvent) {
+        H2Connect h2 = new H2Connect();
+        
+        List<Item> newItems = h2.fetchItems();
+        for(Item item: newItems) {
+            System.out.println(item);
+        }
+
+        h2.close();
+    }
+
+
+    private Button createSaveToBaseButton() {
+        Button savetoBaseButton = new Button("Save to Database");
+        savetoBaseButton.setOnAction(this::saveToBase);
+        return savetoBaseButton;
+    }
+
+    private void saveToBase(ActionEvent actionEvent) {
+        saveList(actionEvent);
+
+        Parser parser = new Parser();
+        parser.readFromFile();
+        List<Item> items = parser.returnAllItems().get();
+
+        H2Connect h2 = new H2Connect();
+        for (Item item: items) {
+            h2.saveItem(item);
+        }
+
+        h2.close();
+    }
+
+    private Button createClearButton() {
+        Button clearButton = new Button("Clear List");
+        clearButton.setOnAction(this::clearList);
+        return clearButton;
+    }
+
+    private void clearList(ActionEvent actionEvent) {
+        createList();
+        root.setCenter(grid);
+    }
+
+    private Button createLoadfromDbButton() {
+        Button loadFromDbButton = new Button("Load from Dropbox");
+        loadFromDbButton.setOnAction(this::loadFromDb);
+        return loadFromDbButton;
+    }
+
+    private void loadFromDb(ActionEvent actionEvent) {
+        if (dropbox == null) {
+            connectToDropbox();
+        }
+
+        dropbox.readFile(SAVEFILENAME);
+        loadList(actionEvent);
     }
 
     private Button createSaveToDbButton() {
@@ -50,14 +123,17 @@ public class App extends Application {
     }
 
     private void saveToDb(ActionEvent actionEvent) {
-        DropboxConnection dropbox = new DropboxConnection();
-        dropbox.setInputDialog(new TextInputDialog("your code"));
-        dropbox.connect();
+        saveList(actionEvent);
+        if (dropbox == null) {
+            connectToDropbox();
+        }
 
-        /*try {
-            dropbox.save("test.txt");
-        } catch (DbxException e){ e.printStackTrace(); }
-        catch (IOException e) { e.printStackTrace(); }*/
+        dropbox.save(SAVEFILENAME);
+    }
+
+    private void connectToDropbox() {
+        dropbox = new DropboxConnection(new TextInputDialog("your code"));
+        dropbox.connect();
     }
 
     private Button createNewLineButton() {
@@ -71,13 +147,13 @@ public class App extends Application {
     }
 
     private Button createLoadButton() {
-        Button loadButton = new Button("Load saved list");
+        Button loadButton = new Button("Load from File");
         loadButton.setOnAction(this::loadList);
         return loadButton;
     }
 
     private Button createSaveButton() {
-        Button saveButton = new Button("Save the list");
+        Button saveButton = new Button("Save to File");
         saveButton.setOnAction(this::saveList);
         return saveButton;
     }
