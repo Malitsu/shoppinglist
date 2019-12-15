@@ -59,13 +59,16 @@ public class App extends Application {
 
     private void loadFromBase(ActionEvent actionEvent) {
         H2Connect h2 = new H2Connect();
-        
         List<Item> newItems = h2.fetchItems();
-        for(Item item: newItems) {
-            System.out.println(item);
-        }
 
+        Parser parser = new Parser();
+        for(Item item: newItems) {
+            parser.addItem(item);
+        }
         h2.close();
+
+        parser.writeToFile();
+        loadList(actionEvent);
     }
 
 
@@ -86,7 +89,6 @@ public class App extends Application {
         for (Item item: items) {
             h2.saveItem(item);
         }
-
         h2.close();
     }
 
