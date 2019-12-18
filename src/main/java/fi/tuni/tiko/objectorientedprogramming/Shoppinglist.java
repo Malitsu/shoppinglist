@@ -7,6 +7,7 @@ import fi.tuni.tiko.objectorientedprogramming.JSONparser.Parser;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -26,7 +27,6 @@ public class Shoppinglist extends Application {
     private GridPane grid;
     private BorderPane root;
     private Scene content;
-    private HBox listButtons;
 
     private DropboxConnection dropbox = null;
     final private String SAVEFILENAME = "save.json";
@@ -45,10 +45,13 @@ public class Shoppinglist extends Application {
         root = new BorderPane();
         root.setTop(generateMenubar());
         root.setCenter(createList());
-        listButtons = new HBox(createClearButton(), createNewLineButton());
+        HBox listButtons = new HBox(createClearButton(), createNewLineButton());
+        listButtons.setPadding(new Insets(10,10,10,10));
         root.setBottom(listButtons);
         VBox saveButtons = new VBox(createLoadButton(), createSaveButton());
+        saveButtons.setPadding(new Insets(10,10,10,10));
         root.setRight(saveButtons);
+
         content = new Scene(root, 450, 330);
         window.setScene(content);
 
@@ -78,8 +81,23 @@ public class Shoppinglist extends Application {
         saveGroup.getToggles().addAll(fileItem, dropboxItem, databaseItem);
         saveMenu.getItems().addAll(fileItem, dropboxItem, databaseItem);
 
-        menubar.getMenus().addAll(fileMenu, saveMenu);
+        Menu helpMenu = new Menu("Help");
+        MenuItem infoItem = new MenuItem("About");
+        infoItem.setOnAction(this::showAboutWindow);
+        helpMenu.getItems().addAll(infoItem);
+
+        menubar.setPadding(new Insets(0,0,0,10));
+        menubar.getMenus().addAll(fileMenu, saveMenu, helpMenu);
         return menubar;
+    }
+
+    private void showAboutWindow(ActionEvent actionEvent) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("About");
+        alert.setHeaderText("Thank you for using Shopping List!");
+        alert.setContentText("2019 tiina.malinen@tuni.fi");
+
+        alert.showAndWait();
     }
 
     private Button createLoadButton() {
@@ -205,6 +223,7 @@ public class Shoppinglist extends Application {
         parser.readFromFile();
         int counter=0;
         grid = new GridPane();
+
         while (parser.areMoreItems()) {
             Optional<Item> item = parser.returnItem();
             if (item.isPresent()) {
@@ -216,7 +235,7 @@ public class Shoppinglist extends Application {
     }
 
     private void refreshView() {
-        if(grid.getRowCount() > 8) {
+        if(grid.getRowCount() > 10) {
             ScrollPane scroll = new ScrollPane();
             scroll.setContent(grid);
             scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
@@ -226,6 +245,7 @@ public class Shoppinglist extends Application {
         else {
             root.setCenter(grid);
         }
+        grid.setPadding(new Insets(10,10,10,10));
     }
 
     private void saveList(ActionEvent actionEvent) {
@@ -254,10 +274,14 @@ public class Shoppinglist extends Application {
     private GridPane createList() {
         grid = new GridPane();
 
-        for (int i=0; i<5; i++) {
+        Item item = new Item("item", "amount");
+        createNewLine(item);
+
+        for (int i=0; i<4; i++) {
             createNewLine();
         }
 
+        grid.setPadding(new Insets(10,10,10,10));
         return grid;
     }
 
