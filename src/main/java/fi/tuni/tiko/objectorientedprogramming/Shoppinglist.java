@@ -5,6 +5,7 @@ import fi.tuni.tiko.objectorientedprogramming.JSONparser.H2Connect;
 import fi.tuni.tiko.objectorientedprogramming.JSONparser.Item;
 import fi.tuni.tiko.objectorientedprogramming.JSONparser.Parser;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -44,11 +45,11 @@ public class Shoppinglist extends Application {
         root = new BorderPane();
         root.setTop(generateMenubar());
         root.setCenter(createList());
-        listButtons = new HBox(createNewLineButton(), createClearButton());
+        listButtons = new HBox(createClearButton(), createNewLineButton());
         root.setBottom(listButtons);
         VBox saveButtons = new VBox(createLoadButton(), createSaveButton());
         root.setRight(saveButtons);
-        content = new Scene(root, 350, 300);
+        content = new Scene(root, 450, 330);
         window.setScene(content);
 
         window.show();
@@ -57,8 +58,15 @@ public class Shoppinglist extends Application {
 
     private MenuBar generateMenubar() {
         MenuBar menubar = new MenuBar();
-        Menu saveMenu = new Menu("Save method");
 
+        Menu fileMenu = new Menu("File");
+        MenuItem deleteItem = new MenuItem("Delete information");
+        deleteItem.setOnAction(this::deleteSaves);
+        MenuItem exitItem = new MenuItem("Exit");
+        exitItem.setOnAction(e -> Platform.exit());
+        fileMenu.getItems().addAll(deleteItem, exitItem);
+
+        Menu saveMenu = new Menu("Save method");
         ToggleGroup saveGroup = new ToggleGroup();
         RadioMenuItem fileItem = new RadioMenuItem("Filesystem");
         RadioMenuItem dropboxItem = new RadioMenuItem("Dropbox");
@@ -68,9 +76,9 @@ public class Shoppinglist extends Application {
         databaseItem.setOnAction(e -> { saveMethod = Save.DATABASE; });
         fileItem.setSelected(true);
         saveGroup.getToggles().addAll(fileItem, dropboxItem, databaseItem);
-
         saveMenu.getItems().addAll(fileItem, dropboxItem, databaseItem);
-        menubar.getMenus().addAll(saveMenu);
+
+        menubar.getMenus().addAll(fileMenu, saveMenu);
         return menubar;
     }
 
@@ -136,9 +144,8 @@ public class Shoppinglist extends Application {
         List<Item> items = parser.returnAllItems().get();
 
         H2Connect h2 = new H2Connect();
-        for (Item item: items) {
-            h2.saveItem(item);
-        }
+        h2.removeAll();
+        h2.saveItems(items);
         h2.close();
     }
 
@@ -153,10 +160,10 @@ public class Shoppinglist extends Application {
         root.setCenter(grid);
     }
 
-    private Button createLoadfromDropboxButton() {
-        Button loadFromDropboxButton = new Button("Load from Dropbox");
-        loadFromDropboxButton.setOnAction(this::loadFromDropbox);
-        return loadFromDropboxButton;
+    private void deleteSaves(ActionEvent actionEvent) {
+        clearList(actionEvent);
+        saveToDatabase(actionEvent);
+        saveToDropbox(actionEvent);
     }
 
     private void loadFromDropbox(ActionEvent actionEvent) {
@@ -166,12 +173,6 @@ public class Shoppinglist extends Application {
 
         dropbox.readFile(SAVEFILENAME);
         loadList(actionEvent);
-    }
-
-    private Button createSaveToDropboxButton() {
-        Button saveToDropboxButton = new Button("Save to Dropbox");
-        saveToDropboxButton.setOnAction(this::saveToDropbox);
-        return saveToDropboxButton;
     }
 
     private void saveToDropbox(ActionEvent actionEvent) {
@@ -196,6 +197,7 @@ public class Shoppinglist extends Application {
 
     private void newLineAction(ActionEvent actionEvent) {
         createNewLine();
+        refreshView();
     }
 
     private void loadList(ActionEvent actionEvent) {
@@ -218,7 +220,7 @@ public class Shoppinglist extends Application {
             ScrollPane scroll = new ScrollPane();
             scroll.setContent(grid);
             scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-            scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             root.setCenter(scroll);
         }
         else {
@@ -249,10 +251,6 @@ public class Shoppinglist extends Application {
         parser.writeToFile();
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     private GridPane createList() {
         grid = new GridPane();
 
@@ -275,5 +273,9 @@ public class Shoppinglist extends Application {
         TextField amount = new TextField(item.getProperty());
         grid.add(label, 0, grid.getRowCount()+1);
         grid.add(amount, 1, grid.getRowCount()-1);
+    }
+
+    public static void main(String args[]){
+        launch(args);
     }
 }
