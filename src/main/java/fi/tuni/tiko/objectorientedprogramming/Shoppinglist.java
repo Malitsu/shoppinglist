@@ -1,6 +1,5 @@
 package fi.tuni.tiko.objectorientedprogramming;
 
-import com.dropbox.core.DbxException;
 import fi.tuni.tiko.objectorientedprogramming.JSONparser.H2Connect;
 import fi.tuni.tiko.objectorientedprogramming.JSONparser.Item;
 import fi.tuni.tiko.objectorientedprogramming.JSONparser.Parser;
@@ -17,8 +16,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -179,9 +176,16 @@ public class Shoppinglist extends Application {
     }
 
     private void deleteSaves(ActionEvent actionEvent) {
-        clearList(actionEvent);
-        saveToDatabase(actionEvent);
-        saveToDropbox(actionEvent);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("This will remove all saved lists");
+        alert.setContentText("Do you wish to continue?");
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK) {
+            clearList(actionEvent);
+            saveToDatabase(actionEvent);
+            saveToDropbox(actionEvent);
+        }
     }
 
     private void loadFromDropbox(ActionEvent actionEvent) {
