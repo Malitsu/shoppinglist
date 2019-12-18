@@ -8,10 +8,7 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -29,9 +26,13 @@ public class Shoppinglist extends Application {
     private BorderPane root;
     private Scene content;
     private HBox listButtons;
+
     private DropboxConnection dropbox = null;
     final private String SAVEFILENAME = "save.json";
     private Parser<String, String> parser = new Parser<>();
+
+    enum Save { FILE, DROPBOX, DATABASE; }
+    private Save saveMethod = Save.FILE;
 
     @Override
     public void start(Stage window) {
@@ -41,24 +42,76 @@ public class Shoppinglist extends Application {
         window.setTitle("Shopping list");
 
         root = new BorderPane();
+        root.setTop(generateMenubar());
         root.setCenter(createList());
         listButtons = new HBox(createNewLineButton(), createClearButton());
         root.setBottom(listButtons);
-        VBox saveButtons = new VBox(createLoadButton(), createSaveButton(),
-                                    createLoadfromDropboxButton(), createSaveToDropboxButton(),
-                                    createLoadFromDatabaseButton(), createSaveToDatabaseButton());
+        VBox saveButtons = new VBox(createLoadButton(), createSaveButton());
         root.setRight(saveButtons);
-        content = new Scene(root, 320, 240);
+        content = new Scene(root, 350, 300);
         window.setScene(content);
 
         window.show();
 
     }
 
-    private Button createLoadFromDatabaseButton() {
-        Button loadFromDatabaseButton = new Button("Load from Database");
-        loadFromDatabaseButton.setOnAction(this::loadFromDatabase);
-        return loadFromDatabaseButton;
+    private MenuBar generateMenubar() {
+        MenuBar menubar = new MenuBar();
+        Menu saveMenu = new Menu("Save method");
+
+        ToggleGroup saveGroup = new ToggleGroup();
+        RadioMenuItem fileItem = new RadioMenuItem("Filesystem");
+        RadioMenuItem dropboxItem = new RadioMenuItem("Dropbox");
+        RadioMenuItem databaseItem = new RadioMenuItem("Database");
+        fileItem.setOnAction(e -> { saveMethod = Save.FILE; });
+        dropboxItem.setOnAction(e -> { saveMethod = Save.DROPBOX; });
+        databaseItem.setOnAction(e -> { saveMethod = Save.DATABASE; });
+        fileItem.setSelected(true);
+        saveGroup.getToggles().addAll(fileItem, dropboxItem, databaseItem);
+
+        saveMenu.getItems().addAll(fileItem, dropboxItem, databaseItem);
+        menubar.getMenus().addAll(saveMenu);
+        return menubar;
+    }
+
+    private Button createLoadButton() {
+        Button loadButton = new Button("Load list");
+        loadButton.setOnAction(this::loadAction);
+        return loadButton;
+    }
+
+    private Button createSaveButton() {
+        Button saveButton = new Button("Save list");
+        saveButton.setOnAction(this::saveAction);
+        return saveButton;
+    }
+
+    private void loadAction(ActionEvent actionEvent) {
+        switch (saveMethod) {
+            case FILE:
+                loadList(actionEvent);
+                break;
+            case DROPBOX:
+                loadFromDropbox(actionEvent);
+                break;
+            case DATABASE:
+                loadFromDatabase(actionEvent);
+                break;
+        }
+    }
+
+    private void saveAction(ActionEvent actionEvent) {
+        switch (saveMethod) {
+            case FILE:
+                saveList(actionEvent);
+                break;
+            case DROPBOX:
+                saveToDropbox(actionEvent);
+                break;
+            case DATABASE:
+                saveToDatabase(actionEvent);
+                break;
+        }
     }
 
     private void loadFromDatabase(ActionEvent actionEvent) {
@@ -73,13 +126,6 @@ public class Shoppinglist extends Application {
 
         parser.writeToFile();
         loadList(actionEvent);
-    }
-
-
-    private Button createSaveToDatabaseButton() {
-        Button savetoDatabaseButton = new Button("Save to Database");
-        savetoDatabaseButton.setOnAction(this::saveToDatabase);
-        return savetoDatabaseButton;
     }
 
     private void saveToDatabase(ActionEvent actionEvent) {
@@ -150,18 +196,6 @@ public class Shoppinglist extends Application {
 
     private void newLineAction(ActionEvent actionEvent) {
         createNewLine();
-    }
-
-    private Button createLoadButton() {
-        Button loadButton = new Button("Load from File");
-        loadButton.setOnAction(this::loadList);
-        return loadButton;
-    }
-
-    private Button createSaveButton() {
-        Button saveButton = new Button("Save to File");
-        saveButton.setOnAction(this::saveList);
-        return saveButton;
     }
 
     private void loadList(ActionEvent actionEvent) {
